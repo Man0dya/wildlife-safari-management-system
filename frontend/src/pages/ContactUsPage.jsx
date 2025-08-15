@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -13,6 +13,326 @@ const ContactUsPage = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [activeFilters, setActiveFilters] = useState({
+    safari: true,
+    hiking: true,
+    adventure: true
+  });
+  const [mapMarkers, setMapMarkers] = useState([]);
+
+  // Office location (Colombo)
+  const officeLocation = {
+    lat: 6.9271,
+    lng: 79.8612,
+    name: "WildPath Safari Office",
+    address: "123 Wildlife Road, Colombo 03, Sri Lanka"
+  };
+
+  // Categorized locations by adventure type
+  const adventureLocations = {
+    safari: [
+      {
+        name: "Yala National Park",
+        lat: 6.3667,
+        lng: 81.5167,
+        description: "Famous for leopards and elephants"
+      },
+      {
+        name: "Wilpattu National Park",
+        lat: 8.4500,
+        lng: 80.0000,
+        description: "Largest national park, known for leopards"
+      },
+      {
+        name: "Udawalawe National Park",
+        lat: 6.4333,
+        lng: 80.8833,
+        description: "Best place to see elephants"
+      },
+      {
+        name: "Minneriya National Park",
+        lat: 7.9833,
+        lng: 80.7500,
+        description: "Famous for elephant gatherings"
+      },
+      {
+        name: "Kumana National Park",
+        lat: 6.5833,
+        lng: 81.6833,
+        description: "Bird watching paradise"
+      },
+      {
+        name: "Gal Oya National Park",
+        lat: 7.2167,
+        lng: 81.5167,
+        description: "Boat safaris and wildlife"
+      },
+      {
+        name: "Wasgamuwa National Park",
+        lat: 7.7167,
+        lng: 80.9333,
+        description: "Elephant sanctuary"
+      },
+      {
+        name: "Kaudulla National Park",
+        lat: 8.0000,
+        lng: 80.8333,
+        description: "Elephant gathering spot"
+      }
+    ],
+    hiking: [
+      {
+        name: "Adam's Peak",
+        lat: 6.8096,
+        lng: 80.4994,
+        description: "Sacred mountain pilgrimage"
+      },
+      {
+        name: "Horton Plains National Park",
+        lat: 6.8000,
+        lng: 80.8000,
+        description: "World's End viewpoint"
+      },
+      {
+        name: "Ella Rock",
+        lat: 6.8667,
+        lng: 81.0500,
+        description: "Scenic mountain trails"
+      },
+      {
+        name: "Little Adam's Peak",
+        lat: 6.8500,
+        lng: 81.0500,
+        description: "Easy hiking with great views"
+      },
+      {
+        name: "Pidurangala Rock",
+        lat: 7.9667,
+        lng: 80.7500,
+        description: "Alternative to Sigiriya"
+      },
+      {
+        name: "Knuckles Mountain Range",
+        lat: 7.4000,
+        lng: 80.8000,
+        description: "Challenging mountain trails"
+      },
+      {
+        name: "Sinharaja Forest Reserve",
+        lat: 6.4167,
+        lng: 80.5000,
+        description: "Rainforest hiking trails"
+      },
+      {
+        name: "Bambarakanda Falls",
+        lat: 6.7167,
+        lng: 80.8167,
+        description: "Highest waterfall in Sri Lanka"
+      }
+    ],
+    adventure: [
+      {
+        name: "Arugam Bay",
+        lat: 6.8500,
+        lng: 81.8333,
+        description: "Surfing paradise"
+      },
+      {
+        name: "Bentota",
+        lat: 6.4167,
+        lng: 80.0000,
+        description: "Water sports and activities"
+      },
+      {
+        name: "Nilaveli Beach",
+        lat: 8.7167,
+        lng: 81.2000,
+        description: "Snorkeling and diving"
+      },
+      {
+        name: "Pigeon Island",
+        lat: 8.7167,
+        lng: 81.2000,
+        description: "Marine national park"
+      },
+      {
+        name: "Kalpitiya",
+        lat: 8.1667,
+        lng: 79.7167,
+        description: "Kite surfing destination"
+      },
+      {
+        name: "Maduru Oya National Park",
+        lat: 7.5000,
+        lng: 81.1667,
+        description: "Wildlife and adventure"
+      },
+      {
+        name: "Nuwara Eliya",
+        lat: 6.9708,
+        lng: 80.7829,
+        description: "Tea plantations and hiking"
+      },
+      {
+        name: "Pasikuda",
+        lat: 7.9167,
+        lng: 81.5667,
+        description: "Coral reef exploration"
+      }
+    ]
+  };
+
+  useEffect(() => {
+    // Load Leaflet CSS
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+    link.crossOrigin = '';
+    document.head.appendChild(link);
+
+    // Load Leaflet JS
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+    script.crossOrigin = '';
+    script.onload = () => {
+      setMapLoaded(true);
+      initializeMap();
+    };
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup
+      document.head.removeChild(link);
+      document.head.removeChild(script);
+    };
+  }, []);
+
+  const initializeMap = () => {
+    if (typeof L === 'undefined') return;
+
+    // Create map centered on office location (Colombo)
+    const map = L.map('map').setView([officeLocation.lat, officeLocation.lng], 9);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add office marker (larger and more prominent)
+    const officeIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: `<div style="background-color: #10B981; width: 45px; height: 45px; border-radius: 50%; border: 4px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.4); animation: pulse 2s infinite;">
+                <span style="color: white; font-size: 20px;">🏢</span>
+              </div>`,
+      iconSize: [45, 45],
+      iconAnchor: [22.5, 22.5]
+    });
+
+    const officeMarker = L.marker([officeLocation.lat, officeLocation.lng], { icon: officeIcon })
+      .addTo(map)
+      .bindPopup(`
+        <div style="text-align: center; min-width: 200px;">
+          <h3 style="margin: 0 0 8px 0; color: #10B981; font-weight: bold;">${officeLocation.name}</h3>
+          <p style="margin: 0; color: #666; font-size: 14px;">${officeLocation.address}</p>
+        </div>
+      `);
+
+    // Store map reference globally for filter functionality
+    window.contactMap = map;
+    window.contactMapMarkers = [];
+
+    // Add categorized location markers
+    const categoryIcons = {
+      safari: {
+        color: '#059669',
+        icon: '🦁',
+        size: 25
+      },
+      hiking: {
+        color: '#F59E0B',
+        icon: '🏔️',
+        size: 25
+      },
+      adventure: {
+        color: '#EF4444',
+        icon: '🏄',
+        size: 25
+      }
+    };
+
+    Object.entries(adventureLocations).forEach(([category, locations]) => {
+      const iconConfig = categoryIcons[category];
+      
+      locations.forEach((location) => {
+        const locationIcon = L.divIcon({
+          className: 'custom-div-icon',
+          html: `<div style="background-color: ${iconConfig.color}; width: ${iconConfig.size}px; height: ${iconConfig.size}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                    <span style="color: white; font-size: 12px;">${iconConfig.icon}</span>
+                  </div>`,
+          iconSize: [iconConfig.size, iconConfig.size],
+          iconAnchor: [iconConfig.size/2, iconConfig.size/2]
+        });
+
+        const marker = L.marker([location.lat, location.lng], { icon: locationIcon })
+          .addTo(map)
+          .bindPopup(`
+            <div style="text-align: center; min-width: 200px;">
+              <div style="background-color: ${iconConfig.color}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; text-transform: uppercase; margin-bottom: 8px; display: inline-block;">
+                ${category}
+              </div>
+              <h4 style="margin: 0 0 5px 0; color: ${iconConfig.color}; font-weight: bold;">${location.name}</h4>
+              <p style="margin: 0; color: #666; font-size: 12px;">${location.description}</p>
+            </div>
+          `);
+
+        // Store marker with category for filtering
+        window.contactMapMarkers.push({ marker, category });
+      });
+    });
+
+    // Add custom CSS for popups and map
+    const style = document.createElement('style');
+    style.textContent = `
+      .leaflet-popup-content-wrapper {
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .leaflet-popup-content {
+        margin: 8px 12px;
+      }
+      .leaflet-popup-tip {
+        background: white;
+      }
+      #map {
+        z-index: 1;
+      }
+      .leaflet-container {
+        border-radius: 8px;
+      }
+      .custom-div-icon {
+        background: transparent;
+        border: none;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+        50% {
+          transform: scale(1.1);
+          box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,6 +358,24 @@ const ContactUsPage = () => {
       });
       alert('Thank you! Your message has been sent successfully. We\'ll get back to you within 24 hours.');
     }, 2000);
+  };
+
+  const toggleFilter = (category) => {
+    const newFilters = { ...activeFilters, [category]: !activeFilters[category] };
+    setActiveFilters(newFilters);
+    
+    // Update map markers visibility
+    if (window.contactMapMarkers) {
+      window.contactMapMarkers.forEach(({ marker, category: markerCategory }) => {
+        if (markerCategory === category) {
+          if (newFilters[category]) {
+            marker.addTo(window.contactMap);
+          } else {
+            marker.removeFrom(window.contactMap);
+          }
+        }
+      });
+    }
   };
 
   const faqs = [
@@ -278,13 +616,54 @@ const ContactUsPage = () => {
 
           <div className="mb-16">
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-              <h3 className="text-2xl font-abeze font-bold text-white mb-6 text-center">Find Us</h3>
-              <div className="bg-gray-800 rounded-lg h-64 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-6xl mb-4">🗺️</div>
-                  <p className="text-gray-300 font-abeze">Interactive Map Coming Soon</p>
-                  <p className="text-gray-400 font-abeze text-sm">123 Wildlife Road, Colombo 03, Sri Lanka</p>
+              <h3 className="text-2xl font-abeze font-bold text-white mb-6 text-center">Our Locations</h3>
+              <div id="map" className="bg-gray-800 rounded-lg h-96 relative"></div>
+              
+              {/* Map Legend */}
+              <div className="mt-4">
+                <h4 className="text-white font-abeze font-bold text-center mb-4">Adventure Categories</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 justify-center">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-7 h-7 bg-green-500 rounded-full border-2 border-white flex items-center justify-center animate-pulse">
+                      <span className="text-white text-sm">🏢</span>
+                    </div>
+                    <span className="text-gray-300 font-abeze text-xs font-semibold">Our Office</span>
+                  </div>
+                  <button 
+                    onClick={() => toggleFilter('safari')}
+                    className={`flex items-center space-x-2 transition-opacity ${activeFilters.safari ? 'opacity-100' : 'opacity-50'}`}
+                  >
+                    <div className="w-5 h-5 bg-green-600 rounded-full border-2 border-white flex items-center justify-center">
+                      <span className="text-white text-xs">🦁</span>
+                    </div>
+                    <span className="text-gray-300 font-abeze text-xs">Safari</span>
+                  </button>
+                  <button 
+                    onClick={() => toggleFilter('hiking')}
+                    className={`flex items-center space-x-2 transition-opacity ${activeFilters.hiking ? 'opacity-100' : 'opacity-50'}`}
+                  >
+                    <div className="w-5 h-5 bg-yellow-500 rounded-full border-2 border-white flex items-center justify-center">
+                      <span className="text-white text-xs">🏔️</span>
+                    </div>
+                    <span className="text-gray-300 font-abeze text-xs">Hiking</span>
+                  </button>
+                  <button 
+                    onClick={() => toggleFilter('adventure')}
+                    className={`flex items-center space-x-2 transition-opacity ${activeFilters.adventure ? 'opacity-100' : 'opacity-50'}`}
+                  >
+                    <div className="w-5 h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+                      <span className="text-white text-xs">🏄</span>
+                    </div>
+                    <span className="text-gray-300 font-abeze text-xs">Adventure</span>
+                  </button>
                 </div>
+              </div>
+              
+              {/* Map Instructions */}
+              <div className="mt-4 text-center">
+                <p className="text-gray-400 font-abeze text-sm">
+                  Click on markers to see details • Zoom and pan to explore
+                </p>
               </div>
             </div>
           </div>
