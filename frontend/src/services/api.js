@@ -246,6 +246,7 @@ export const bookingApi = {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 export const attendanceApi = {
   async getAllAttendance() {
     const { data } = await api.get('/api/attendance');
@@ -368,6 +369,8 @@ export const payrollApi = {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 export const reviewApi = {
   async createReview(payload) {
     const { data } = await api.post('/api/reviews', payload);
@@ -426,6 +429,9 @@ export const reviewApi = {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

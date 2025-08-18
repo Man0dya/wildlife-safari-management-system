@@ -1137,8 +1137,12 @@ const AdminPage = () => {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                  { id: 'attendance', label: 'Attendance', icon: '⏰' },
                  { id: 'payroll', label: 'Payroll', icon: '💰' },
+=======
+                 { id: 'reviews', label: 'Reviews', icon: '⭐' },
+>>>>>>> Stashed changes
 =======
                  { id: 'reviews', label: 'Reviews', icon: '⭐' },
 >>>>>>> Stashed changes
@@ -1185,8 +1189,12 @@ const AdminPage = () => {
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
               {activeTab === 'attendance' && <Attendance />}
               {activeTab === 'payroll' && <Payroll />}
+=======
+              {activeTab === 'reviews' && renderReviews()}
+>>>>>>> Stashed changes
 =======
               {activeTab === 'reviews' && renderReviews()}
 >>>>>>> Stashed changes
