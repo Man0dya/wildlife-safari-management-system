@@ -87,6 +87,9 @@ const findPackageWithImages = async () => {
 findPackageWithImages();
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

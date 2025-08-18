@@ -53,6 +53,9 @@ fs.writeFileSync('test-base64-images.html', htmlContent);
 console.log('✅ Test HTML file created: test-base64-images.html');
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
