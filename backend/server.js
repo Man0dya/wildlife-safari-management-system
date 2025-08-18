@@ -15,8 +15,12 @@ import bookingRoutes from "./routes/bookings.js";
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import attendanceRoutes from "./routes/attendance.js";
 import payrollRoutes from "./routes/payroll.js";
+=======
+import reviewRoutes from "./routes/reviews.js";
+>>>>>>> Stashed changes
 =======
 import reviewRoutes from "./routes/reviews.js";
 >>>>>>> Stashed changes
@@ -78,8 +82,12 @@ app.use("/api/bookings", bookingRoutes);
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/payroll", payrollRoutes);
+=======
+app.use("/api/reviews", reviewRoutes);
+>>>>>>> Stashed changes
 =======
 app.use("/api/reviews", reviewRoutes);
 >>>>>>> Stashed changes
