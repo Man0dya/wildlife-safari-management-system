@@ -52,3 +52,4 @@ import fs from 'fs';
 fs.writeFileSync('test-base64-images.html', htmlContent);
 console.log('✅ Test HTML file created: test-base64-images.html');
 
+
