@@ -71,4 +71,7 @@ const checkAllReviewsImages = async () => {
 
 checkAllReviewsImages();
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes

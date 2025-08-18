@@ -55,4 +55,7 @@ class LocalImageService {
 
 export default new LocalImageService();
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
