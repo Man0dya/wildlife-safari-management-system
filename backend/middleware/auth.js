@@ -57,6 +57,7 @@ export const requireAdmin = async (req, res, next) => {
   }
 };
 
+<<<<<<< Updated upstream
 export const requireStaff = async (req, res, next) => {
   try {
     // Check if user is staff or admin (authenticateToken already ran)
@@ -71,6 +72,8 @@ export const requireStaff = async (req, res, next) => {
   }
 };
 
+=======
+>>>>>>> Stashed changes
 export const requireRole = (allowedRoles) => {
   return async (req, res, next) => {
     try {

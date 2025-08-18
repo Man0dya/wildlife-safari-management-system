@@ -242,6 +242,7 @@ export const bookingApi = {
 };
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 export const attendanceApi = {
   async getAllAttendance() {
     const { data } = await api.get('/api/attendance');
@@ -356,6 +357,8 @@ export const payrollApi = {
   async deletePayroll(id) {
     const { data } = await api.delete(`/api/payroll/${id}`);
 =======
+=======
+>>>>>>> Stashed changes
 export const reviewApi = {
   async createReview(payload) {
     const { data } = await api.post('/api/reviews', payload);
@@ -410,6 +413,9 @@ export const reviewApi = {
   },
   async deleteReview(reviewId) {
     const { data } = await api.delete(`/api/reviews/admin/${reviewId}`);
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     return data;
   },
