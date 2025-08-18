@@ -7,6 +7,7 @@ import Home from './components/Home'
 import Awareness from './components/Awareness'
 import SafariPackages from './components/SafariPackages'
 import TravelPackagesPage from './pages/TravelPackagesPage'
+import PackageDetailPage from './pages/PackageDetailPage'
 import ContactUsPage from './pages/ContactUsPage'
 import AboutUsPage from './pages/AboutUsPage'
 import UserAccountPage from './pages/UserAccountPage'
@@ -40,6 +41,7 @@ function App() {
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/travel-packages" element={<TravelPackagesPage />} />
+          <Route path="/package/:packageId" element={<PackageDetailPage />} />
           <Route path="/contact" element={<ContactUsPage />} />
           <Route path="/about" element={<AboutUsPage />} />
           <Route path="/account" element={

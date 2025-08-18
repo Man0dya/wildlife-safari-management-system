@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { bookingApi } from '../services/api';
+import { bookingApi, reviewApi } from '../services/api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import EditProfileModal from '../components/EditProfileModal';
 import UserContactMessages from '../components/UserContactMessages';
+import ReviewModal from '../components/ReviewModal';
 
 const UserAccountPage = () => {
   const { user, logout } = useAuth();
@@ -16,6 +17,9 @@ const UserAccountPage = () => {
   const [bookings, setBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [bookingsError, setBookingsError] = useState(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [userReviews, setUserReviews] = useState([]);
 
   const handleLogout = () => {
     logout();
@@ -55,7 +59,7 @@ const UserAccountPage = () => {
     }
   };
 
-  // Fetch bookings when component mounts if user has any
+  // Fetch bookings and reviews when component mounts if user has any
   useEffect(() => {
     const checkBookings = async () => {
       try {
@@ -68,7 +72,19 @@ const UserAccountPage = () => {
       }
     };
     
+    const checkReviews = async () => {
+      try {
+        const response = await reviewApi.getUserReviews();
+        if (response.success) {
+          setUserReviews(response.reviews);
+        }
+      } catch (error) {
+        console.error('Error checking initial reviews:', error);
+      }
+    };
+    
     checkBookings();
+    checkReviews();
   }, []);
 
   // Load bookings when bookings tab is selected
@@ -82,6 +98,23 @@ const UserAccountPage = () => {
     setActiveTab(tab);
     if (tab === 'bookings' && bookings.length === 0) {
       handleViewBookings();
+    }
+  };
+
+  const handleAddReview = (booking) => {
+    setSelectedBooking(booking);
+    setShowReviewModal(true);
+  };
+
+  const handleReviewSubmitted = async () => {
+    // Refresh reviews after submission
+    try {
+      const response = await reviewApi.getUserReviews();
+      if (response.success) {
+        setUserReviews(response.reviews);
+      }
+    } catch (error) {
+      console.error('Error refreshing reviews:', error);
     }
   };
 
@@ -127,11 +160,21 @@ const UserAccountPage = () => {
                 My Bookings
               </button>
               <button
+                onClick={() => handleTabChange('reviews')}
+                className={`px-6 py-3 rounded-lg font-abeze font-medium transition-colors duration-300 ${
+                  activeTab === 'reviews'
+                    ? 'bg-green-600 text-white'
+                    : 'text-green-200 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                My Reviews
+              </button>
+              <button
                 onClick={() => handleTabChange('messages')}
                 className={`px-6 py-3 rounded-lg font-abeze font-medium transition-colors duration-300 ${
                   activeTab === 'messages'
                     ? 'bg-green-600 text-white'
-                    : 'text-green-200 hover:text-white hover:bg-white/10'
+                    : 'text-white hover:bg-white/10'
                 }`}
               >
                 My Messages
@@ -295,6 +338,77 @@ const UserAccountPage = () => {
               <UserContactMessages userEmail={user?.email} />
             )}
 
+            {/* Reviews Tab Content */}
+            {activeTab === 'reviews' && (
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+                <h3 className="text-2xl font-abeze font-bold text-white mb-6">
+                  My Reviews
+                </h3>
+                
+                {userReviews.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="bg-gray-600/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                      </svg>
+                    </div>
+                    <p className="text-gray-300 font-abeze mb-4">No reviews yet</p>
+                    <p className="text-gray-400 font-abeze text-sm">Complete a safari to leave your first review!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {userReviews.map((review) => (
+                      <div key={review._id} className="bg-white/5 rounded-lg p-6 border border-white/10">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h4 className="text-lg font-abeze font-bold text-white mb-2">
+                              {review.packageId?.title || 'Safari Package'}
+                            </h4>
+                            <p className="text-green-200 font-abeze text-sm">
+                              {review.packageId?.location || 'N/A'} • {review.packageId?.duration || 'N/A'}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <span
+                                key={star}
+                                className={`text-lg ${
+                                  star <= review.rating ? 'text-yellow-400' : 'text-gray-400'
+                                }`}
+                              >
+                                ★
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <h5 className="font-semibold text-white mb-2">{review.title}</h5>
+                        <p className="text-gray-300 font-abeze mb-4">{review.review}</p>
+                        
+                        {review.images && review.images.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {review.images.map((image, index) => (
+                              <img
+                                key={index}
+                                src={image.url}
+                                alt={`Review photo ${index + 1}`}
+                                className="w-16 h-16 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                                onClick={() => window.open(image.url, '_blank')}
+                              />
+                            ))}
+                          </div>
+                        )}
+                        
+                        <div className="mt-4 text-sm text-gray-400 font-abeze">
+                          Reviewed on {new Date(review.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Bookings Tab Content */}
             {activeTab === 'bookings' && (
               <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
@@ -398,6 +512,21 @@ const UserAccountPage = () => {
                                 </span>
                               </div>
                             </div>
+                            
+                            {/* Add Review Button for Completed Bookings */}
+                            {booking.status === 'Completed' && (
+                              <div className="mt-4 flex justify-end">
+                                <button
+                                  onClick={() => handleAddReview(booking)}
+                                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-abeze font-medium transition-colors duration-300 flex items-center space-x-2"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                  </svg>
+                                  <span>Add a Review</span>
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -417,6 +546,16 @@ const UserAccountPage = () => {
         <EditProfileModal 
           onClose={handleCloseEditProfile}
           user={user}
+        />
+      )}
+
+      {/* Review Modal */}
+      {showReviewModal && selectedBooking && (
+        <ReviewModal
+          isOpen={showReviewModal}
+          onClose={() => setShowReviewModal(false)}
+          booking={selectedBooking}
+          onReviewSubmitted={handleReviewSubmitted}
         />
       )}
     </div>

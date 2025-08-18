@@ -21,4 +21,27 @@ const upload = multer({
   }
 });
 
-export default upload;
+// Custom middleware to handle multipart form data properly
+const handleMultipartForm = (fieldName, maxCount) => {
+  return (req, res, next) => {
+    upload.array(fieldName, maxCount)(req, res, (err) => {
+      if (err) {
+        console.error('Multer error:', err);
+        return res.status(400).json({
+          success: false,
+          message: err.message
+        });
+      }
+      
+      // Ensure text fields are available in req.body
+      if (req.body) {
+        console.log('Request body after multer:', req.body);
+        console.log('Request files after multer:', req.files);
+      }
+      
+      next();
+    });
+  };
+};
+
+export { upload as default, handleMultipartForm };

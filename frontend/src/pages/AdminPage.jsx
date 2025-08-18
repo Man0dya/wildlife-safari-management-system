@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { packageApi, userApi, staffApi, safariRequestApi, bookingApi } from '../services/api';
+import { packageApi, userApi, staffApi, safariRequestApi, bookingApi, reviewApi } from '../services/api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import AddPackageModal from '../components/AddPackageModal';
@@ -35,6 +35,9 @@ const AdminPage = () => {
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [editingBookingId, setEditingBookingId] = useState(null);
 
   const handleLogout = () => {
     logout();
@@ -57,6 +60,8 @@ const AdminPage = () => {
       loadSafariRequests();
     } else if (activeTab === 'bookings') {
       loadBookings();
+    } else if (activeTab === 'reviews') {
+      loadReviews();
     }
   }, [activeTab]);
 
@@ -261,18 +266,54 @@ const AdminPage = () => {
     }
   };
 
-  const handleUpdateBookingStatus = async (bookingId) => {
-    const newStatus = prompt('Enter new status for booking (e.g., "Payment Confirmed", "Confirmed", "In Progress", "Completed", "Cancelled"):');
-    if (newStatus) {
+  const loadReviews = async () => {
+    setReviewsLoading(true);
+    try {
+      const reviewsData = await reviewApi.getAllReviews();
+      if (reviewsData.success) {
+        setReviews(reviewsData.reviews);
+      } else {
+        setReviews([]);
+      }
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+      setReviews([]);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    if (window.confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
       try {
-        await bookingApi.updateBookingStatus(bookingId, newStatus);
-        loadBookings();
-        alert('Booking status updated successfully!');
+        await reviewApi.deleteReview(reviewId);
+        loadReviews();
+        alert('Review deleted successfully');
       } catch (error) {
-        console.error('Error updating booking status:', error);
-        alert('Failed to update booking status');
+        console.error('Error deleting review:', error);
+        alert('Failed to delete review');
       }
     }
+  };
+
+  const handleUpdateBookingStatus = async (bookingId, newStatus) => {
+    try {
+      await bookingApi.updateBookingStatus(bookingId, newStatus);
+      loadBookings();
+      setEditingBookingId(null);
+      alert('Booking status updated successfully!');
+    } catch (error) {
+      console.error('Error updating booking status:', error);
+      alert('Failed to update booking status');
+    }
+  };
+
+  const startEditBookingStatus = (bookingId) => {
+    setEditingBookingId(bookingId);
+  };
+
+  const cancelEditBookingStatus = () => {
+    setEditingBookingId(null);
   };
 
   // Calculate dashboard stats from real data
@@ -908,13 +949,130 @@ const AdminPage = () => {
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleUpdateBookingStatus(booking._id)}
-                          className="px-3 py-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 rounded text-xs font-abeze transition-colors"
-                        >
-                          Update Status
-                        </button>
+                        {editingBookingId === booking._id ? (
+                          <div className="flex items-center space-x-2">
+                            <select
+                              className="px-3 py-1 bg-white/10 text-white border border-white/20 rounded text-xs font-abeze"
+                              onChange={(e) => handleUpdateBookingStatus(booking._id, e.target.value)}
+                            >
+                              <option value="">Select Status</option>
+                              <option value="Payment Confirmed">Payment Confirmed</option>
+                              <option value="Confirmed">Confirmed</option>
+                              <option value="In Progress">In Progress</option>
+                              <option value="Completed">Completed</option>
+                              <option value="Cancelled">Cancelled</option>
+                            </select>
+                            <button
+                              onClick={cancelEditBookingStatus}
+                              className="px-3 py-1 bg-gray-500/20 text-gray-400 hover:bg-gray-500/30 rounded text-xs font-abeze transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => startEditBookingStatus(booking._id)}
+                            className="px-3 py-1 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 rounded text-xs font-abeze transition-colors"
+                          >
+                            Update Status
+                          </button>
+                        )}
                       </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderReviews = () => (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-xl font-abeze font-bold text-white">Review Management</h3>
+        <div className="text-gray-300 font-abeze text-sm">
+          Total Reviews: {reviews.length}
+        </div>
+      </div>
+
+      {/* Reviews List */}
+      {reviewsLoading ? (
+        <div className="text-center py-8">
+          <div className="text-gray-300 font-abeze">Loading reviews...</div>
+        </div>
+      ) : reviews.length === 0 ? (
+        <div className="text-center py-8">
+          <div className="text-gray-300 font-abeze">No reviews found.</div>
+        </div>
+      ) : (
+        <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/20">
+                  <th className="text-left py-4 px-6 text-green-200 font-abeze">Customer</th>
+                  <th className="text-left py-4 px-6 text-green-200 font-abeze">Package</th>
+                  <th className="text-left py-4 px-6 text-green-200 font-abeze">Rating</th>
+                  <th className="text-left py-4 px-6 text-green-200 font-abeze">Title</th>
+                  <th className="text-left py-4 px-6 text-green-200 font-abeze">Review</th>
+                  <th className="text-left py-4 px-6 text-green-200 font-abeze">Date</th>
+                  <th className="text-left py-4 px-6 text-green-200 font-abeze">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reviews.map((review) => (
+                  <tr key={review._id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                    <td className="py-4 px-6 text-white font-abeze">
+                      <div>
+                        <div className="font-medium">
+                          {review.userId?.firstName} {review.userId?.lastName}
+                        </div>
+                        <div className="text-sm text-gray-400">{review.userId?.email}</div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 text-white font-abeze">
+                      <div>
+                        <div className="font-medium">{review.packageId?.title}</div>
+                        <div className="text-sm text-gray-400">{review.packageId?.location}</div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center space-x-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span
+                            key={star}
+                            className={`text-lg ${
+                              star <= review.rating ? 'text-yellow-400' : 'text-gray-400'
+                            }`}
+                          >
+                            ★
+                          </span>
+                        ))}
+                        <span className="ml-2 text-sm text-white">{review.rating}/5</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 text-white font-abeze max-w-xs truncate">
+                      {review.title}
+                    </td>
+                    <td className="py-4 px-6 text-white font-abeze max-w-xs">
+                      <div className="truncate" title={review.review}>
+                        {review.review}
+                      </div>
+                    </td>
+                    <td className="py-4 px-6 text-white font-abeze text-sm">
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="py-4 px-6">
+                      <button
+                        onClick={() => handleDeleteReview(review._id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-abeze transition-colors"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -974,8 +1132,12 @@ const AdminPage = () => {
                  { id: 'safari-requests', label: 'Safari Requests', icon: '🦁' },
                  { id: 'contact-messages', label: 'Contact Messages', icon: '💬' },
                  { id: 'bookings', label: 'Bookings', icon: '📅' },
+<<<<<<< Updated upstream
                  { id: 'attendance', label: 'Attendance', icon: '⏰' },
                  { id: 'payroll', label: 'Payroll', icon: '💰' },
+=======
+                 { id: 'reviews', label: 'Reviews', icon: '⭐' },
+>>>>>>> Stashed changes
                  { id: 'reports', label: 'Reports', icon: '📈' },
                ].map((tab) => (
                 <button
@@ -1002,8 +1164,12 @@ const AdminPage = () => {
               {activeTab === 'safari-requests' && renderSafariRequests()}
               {activeTab === 'contact-messages' && <ContactMessages />}
               {activeTab === 'bookings' && renderBookings()}
+<<<<<<< Updated upstream
               {activeTab === 'attendance' && <Attendance />}
               {activeTab === 'payroll' && <Payroll />}
+=======
+              {activeTab === 'reviews' && renderReviews()}
+>>>>>>> Stashed changes
               {activeTab === 'reports' && renderReports()}
             </div>
           </div>

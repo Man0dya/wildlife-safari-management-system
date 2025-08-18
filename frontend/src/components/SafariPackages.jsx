@@ -139,13 +139,21 @@ const SafariPackages = () => {
                   </ul>
                 )}
 
-                {/* Book Button */}
-                <button 
-                  onClick={() => handleBookNow(pkg._id)}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-abeze font-medium transition-colors duration-300"
-                >
-                  Book Now
-                </button>
+                {/* Action Buttons */}
+                <div className="flex space-x-3">
+                  <button 
+                    onClick={() => handleBookNow(pkg._id)}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-abeze font-medium transition-colors duration-300"
+                  >
+                    Book Now
+                  </button>
+                  <button 
+                    onClick={() => navigate(`/package/${pkg._id}`)}
+                    className="flex-1 bg-transparent border-2 border-green-400 text-green-400 hover:bg-green-400 hover:text-white py-2 rounded-lg font-abeze font-medium transition-all duration-300"
+                  >
+                    View Details
+                  </button>
+                </div>
               </div>
             ))}
           </div>

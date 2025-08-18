@@ -70,3 +70,25 @@ export const requireStaff = async (req, res, next) => {
     return res.status(500).json({ message: "Authorization error" });
   }
 };
+
+export const requireRole = (allowedRoles) => {
+  return async (req, res, next) => {
+    try {
+      // First authenticate the token
+      await authenticateToken(req, res, async (err) => {
+        if (err) return next(err);
+        
+        // Check if user has one of the allowed roles
+        if (!allowedRoles.includes(req.user.role)) {
+          return res.status(403).json({ 
+            message: `Access denied. Required roles: ${allowedRoles.join(', ')}` 
+          });
+        }
+        
+        next();
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "Authorization error" });
+    }
+  };
+};

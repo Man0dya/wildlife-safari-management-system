@@ -9,8 +9,12 @@ import staffRoutes from "./routes/staff.js";
 import safariRequestRoutes from "./routes/safariRequests.js";
 import contactMessageRoutes from "./routes/contactMessages.js";
 import bookingRoutes from "./routes/bookings.js";
+<<<<<<< Updated upstream
 import attendanceRoutes from "./routes/attendance.js";
 import payrollRoutes from "./routes/payroll.js";
+=======
+import reviewRoutes from "./routes/reviews.js";
+>>>>>>> Stashed changes
 
 dotenv.config({ path: './.env' });
 
@@ -19,6 +23,7 @@ console.log('Environment variables loaded:');
 console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Present' : 'Missing');
 console.log('STRIPE_SECRET_KEY:', process.env.STRIPE_SECRET_KEY ? 'Present' : 'Missing');
 console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Present' : 'Missing');
+console.log('IMGBB_API_KEY:', process.env.IMGBB_API_KEY ? 'Present' : 'Missing');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -47,8 +52,12 @@ app.use("/api/staff", staffRoutes);
 app.use("/api/safari-requests", safariRequestRoutes);
 app.use("/api/contact-messages", contactMessageRoutes);
 app.use("/api/bookings", bookingRoutes);
+<<<<<<< Updated upstream
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/payroll", payrollRoutes);
+=======
+app.use("/api/reviews", reviewRoutes);
+>>>>>>> Stashed changes
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

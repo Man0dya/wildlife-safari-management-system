@@ -319,7 +319,10 @@ const TravelPackages = () => {
                 >
                   Book Now
                 </button>
-                <button className="w-full bg-transparent border border-green-400 text-green-400 hover:bg-green-400 hover:text-white py-2 rounded-lg font-abeze font-medium transition-all duration-300">
+                <button 
+                  onClick={() => navigate(`/package/${pkg.id}`)}
+                  className="w-full bg-transparent border border-green-400 text-green-400 hover:bg-green-400 hover:text-white py-2 rounded-lg font-abeze font-medium transition-all duration-300"
+                >
                   View Details
                 </button>
               </div>

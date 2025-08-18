@@ -241,6 +241,7 @@ export const bookingApi = {
   },
 };
 
+<<<<<<< Updated upstream
 export const attendanceApi = {
   async getAllAttendance() {
     const { data } = await api.get('/api/attendance');
@@ -354,6 +355,62 @@ export const payrollApi = {
   },
   async deletePayroll(id) {
     const { data } = await api.delete(`/api/payroll/${id}`);
+=======
+export const reviewApi = {
+  async createReview(payload) {
+    const { data } = await api.post('/api/reviews', payload);
+    return data;
+  },
+  async createReviewWithImages(formData) {
+    const uploadApi = axios.create({
+      baseURL,
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+      },
+    });
+    
+    const { data } = await uploadApi.post('/api/reviews/with-images', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  },
+  async getPackageReviews(packageId, params = {}) {
+    const { data } = await api.get(`/api/reviews/package/${packageId}`, { params });
+    return data;
+  },
+  async getUserReviews() {
+    const { data } = await api.get('/api/reviews/user');
+    return data;
+  },
+  async updateReview(reviewId, payload) {
+    const { data } = await api.put(`/api/reviews/${reviewId}`, payload);
+    return data;
+  },
+  async uploadReviewImages(reviewId, formData) {
+    const uploadApi = axios.create({
+      baseURL,
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+      },
+    });
+    
+    const { data } = await uploadApi.post(`/api/reviews/${reviewId}/images`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  },
+  // Admin functions
+  async getAllReviews(params = {}) {
+    const { data } = await api.get('/api/reviews/admin/all', { params });
+    return data;
+  },
+  async deleteReview(reviewId) {
+    const { data } = await api.delete(`/api/reviews/admin/${reviewId}`);
+>>>>>>> Stashed changes
     return data;
   },
 };
